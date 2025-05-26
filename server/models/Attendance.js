@@ -1,28 +1,22 @@
-// backend/models/Attendance.js
-import mongoose from 'mongoose';
+// models/Attendance.js
+import mongoose from "mongoose";
 
-const attendanceSchema = new mongoose.Schema({
-    employeeId: { // <--- CONFIRM THIS FIELD NAME
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Employee',
+const AttendanceSchema = new mongoose.Schema({
+    date: {
+        type: String,
         required: true
     },
-    date: {
-        type: String, // <--- CHANGED TO STRING AS PER YOUR CURRENT CODE'S BEHAVIOR
-        required: true // e.g., "2025-05-25"
+    employeeId: { // Uppercase 'Id' as indicated by the error
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Employee",
+        required: true
     },
     status: {
         type: String,
-        enum: ['Present', 'Absent', 'Late', 'Half-Day', 'Sick'],
-        default: 'Pending'
-    },
-    checkIn: {
-        type: Date, // Keep Date for time, for sorting and proper formatting later
-    },
-    checkOut: {
-        type: Date, // Keep Date for time
-    },
-}, { timestamps: true });
+        enum: ["Present", "Absent", "Sick", "Leave"],
+        default: null
+    }
+});
 
-const Attendance = mongoose.model('Attendance', attendanceSchema);
+const Attendance = mongoose.model("Attendance", AttendanceSchema);
 export default Attendance;

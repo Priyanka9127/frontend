@@ -69,8 +69,10 @@ const Add = () => {
 
   return (
     <> {departments ? ( 
-    <div className='max-w-4xl mx-auto mt-10 bg-white p-8 rounded-md shadow-md'>
-        <h2 className='text-2xl font-bold mb-6'>Add Salary</h2>
+    <div className='max-w-4xl mx-auto mt-10 p-8 bg-white rounded-lg shadow-xl border border-gray-200'>
+        <h2 className='text-2xl font-extrabold mb-8 text-center text-red-600 border-b-2 border-red-200 pb-4'>Add Salary</h2>
+
+        
         <form onSubmit={handleSubmit}>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                
@@ -160,7 +162,7 @@ const Add = () => {
                 </div>
                 <button 
                 type='submit' 
-                className='w-full mt-6 bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-md'>
+                className='w-full mt-3 flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-200 ease-in-out'>
                 Add Salary
                 </button>
         </form>

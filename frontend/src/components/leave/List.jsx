@@ -52,7 +52,7 @@ const List = () => {
           className="px-4 py-0.5 border"
         />
         {user && user.user && user.user.role === 'employee' && (
-          <Link to="/employee-dashboard/add-leave" className="px-4 py-1 bg-teal-600 rounded text-white">
+          <Link to="/employee-dashboard/add-leave" className="px-4 py-1 bg-red-600 rounded text-white">
             Add New Leave
           </Link>
         )}

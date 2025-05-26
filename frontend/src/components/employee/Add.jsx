@@ -9,7 +9,7 @@ const Add = () => {
     const [formData, setFormData] = useState({})
     const navigate = useNavigate()
     useEffect(() => {
-        const getDepartments =  async () => {
+        const getDepartments = async () => {
         const departments = await fetchDepartments();
         setDepartments(departments);
         };
@@ -63,7 +63,7 @@ const Add = () => {
 
   return (
     <div className='max-w-4xl mx-auto mt-10 bg-white p-8 rounded-md shadow-md'>
-        <h2 className='text-2xl font-bold mb-6'>Add New Employee</h2>
+        <h2 className='text-2xl font-extrabold mb-8 text-center text-red-600 border-b-2 border-red-200 pb-4'>Add New Employee</h2>
         <form onSubmit={handleSubmit}>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                 {/* First Name */}
@@ -76,7 +76,7 @@ const Add = () => {
                     placeholder='Enter Name'
                     className='mt-1 p-2 block w-full border border-gray-300 rounded-md '
                     required
-                    />  
+                    />  
 
                 </div>
                 {/* Email */}
@@ -164,7 +164,7 @@ const Add = () => {
                     <label className='block text-sm font-medium text-gray-700'>Department</label>
                     <select
                     name='department'
-                    onChange={handleChange}                   
+                    onChange={handleChange}                   
                     className='mt-1 p-2 block w-full border border-gray-300 rounded-md '
                     required
                     >
@@ -230,7 +230,8 @@ const Add = () => {
                 </div>
                 <button 
                 type='submit' 
-                className='w-full mt-6 bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-md'>
+                // Changed bg-teal-600 to bg-red-600 and hover:bg-teal-700 to hover:bg-red-700
+                className='w-full mt-6 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md'>
                 Add Employee
                 </button>
         </form>

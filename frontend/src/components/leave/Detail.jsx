@@ -58,13 +58,13 @@ const Detail = () => {
  return (
     <>{leave ? (
     <div className='max-w-5xl mx-auto mt-10 bg-white p-8 rounded-md shadow-md '>
-    <h3 className='text-2xl font-bold mb-8 text-center '>Leave Details</h3>
+    <h3 className='text-2xl font-extrabold mb-8 text-center text-red-600 border-b-2 border-red-200 pb-4'>Leave Details</h3>
     <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-        <div>
+        <div className='md:col-span-1 flex justify-center'>
             <img
                 src={`http://localhost:5000/${leave.employeeId.userId.profileImage}`}
                 alt="profile"
-                className="rounded-full border w-72 h-72 object-cover"
+                className="rounded-full w-64 h-64 object-cover border-4 border-red-600 shadow-lg transform transition-transform duration-300 hover:scale-105"
             />
         </div>
 
@@ -105,9 +105,9 @@ const Detail = () => {
                     </p>
                     {leave.status === "Pending" ? (
                         <div className='flex space-x-2'>
-                            <button className='px-2 py-0.5 bg-teal-300 hover:bg-teal-400 rounded mx-2'
+                            <button className='font-semibold text-white px-2 py-0.5 bg-teal-500 hover:bg-teal-600 rounded mx-2'
                             onClick={() => changeStatus(leave._id, "Approved")}>Approve</button>
-                            <button className='px-2 py-0.5 bg-red-300 hover:bg-red-400 rounded mx-2'
+                            <button className='font-semibold text-white px-2 py-0.5 bg-red-500 hover:bg-red-600 rounded mx-2'
                             onClick={() => changeStatus(leave._id, "Rejected")}>Reject</button>
                         </div>
                     ) :

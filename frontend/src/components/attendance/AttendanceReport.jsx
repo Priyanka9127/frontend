@@ -1,241 +1,243 @@
-// frontend/src/pages/AttendanceReport.jsx
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { saveAs } from 'file-saver';
+
+// Helper function to convert data to CSV
+const convertToCSV = (data) => {
+  const headers = ['S No', 'Employee ID', 'Employee Name', 'Department', 'Status'];
+  const csvRows = [];
+  
+  // Add headers
+  csvRows.push(headers.join(','));
+
+  // Add data rows
+  data.forEach((row, index) => {
+    const values = [
+      index + 1,
+      row.employeeId,
+      `"${row.employeeName}"`, // Wrap in quotes to handle commas in names
+      row.departmentName,
+      row.status,
+    ];
+    csvRows.push(values.join(','));
+  });
+
+  return csvRows.join('\n');
+};
+
+// Helper function to download CSV
+const downloadCSV = (csvData, fileName) => {
+  const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+  saveAs(blob, fileName);
+};
 
 const AttendanceReport = () => {
-    const [report, setReport] = useState(null);
-    const [limit, setLimit] = useState(5);
-    const [skip, setSkip] = useState(0);
-    const [dateFilter, setDateFilter] = useState(''); // State for the selected date filter
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const [hasMore, setHasMore] = useState(true);
-    const [downloading, setDownloading] = useState(false); // State for CSV download loading
+  const [report, setReport] = useState(null);
+  const [limit, setLimit] = useState(5);
+  const [skip, setSkip] = useState(0);
+  const [dateFilter, setDateFilter] = useState(''); // Default to today
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
 
-    // Set today's date as default when component mounts
-    useEffect(() => {
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
-        const day = String(today.getDate()).padStart(2, '0');
-        // Format to YYYY-MM-DD for the input type="date" and backend string date matching
-        setDateFilter(`${year}-${month}-${day}`);
-    }, []); // Run once on mount
-
-    const fetchReport = async () => {
-        try {
-            setLoading(true);
-            setError(null);
-            const query = new URLSearchParams({ limit, skip });
-
-            // Only append date if dateFilter is set (not empty string)
-            if (dateFilter) {
-                query.append('date', dateFilter);
-            }
-
-            // console.log("Frontend: Fetching report with URL:", `http://localhost:5000/api/attendance/report?${query.toString()}`); // DEBUG LOG
-            const response = await axios.get(
-                `http://localhost:5000/api/attendance/report?${query.toString()}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`,
-                    },
-                }
-            );
-            // console.log("Frontend: API Response Data for Report:", response.data); // DEBUG LOG
-
-            if (response.data.success) {
-                const newData = response.data.groupData;
-                const totalRecords = response.data.total || 0; // Backend's total count
-
-                if (skip === 0) {
-                    setReport(newData);
-                } else {
-                    setReport((prevData) => {
-                        const mergedData = { ...prevData };
-                        for (const dateKey in newData) {
-                            if (mergedData[dateKey]) {
-                                // This case typically won't happen if `groupData` only returns
-                                // attendance for the current queried date, but for "all dates" it might.
-                                // It means merging records for the same date if they came in separate pages.
-                                // For simplicity, if a date exists, just replace it with the new full array for that date
-                                // or append if pagination is per-date. For now, assuming whole date objects are loaded.
-                                mergedData[dateKey] = [...mergedData[dateKey], ...newData[dateKey]];
-                            } else {
-                                mergedData[dateKey] = newData[dateKey];
-                            }
-                        }
-                        return mergedData;
-                    });
-                }
-
-                const currentDisplayedCount = Object.values(report || {}).flat().length + Object.values(newData || {}).flat().length;
-                setHasMore(currentDisplayedCount < totalRecords);
-
-            } else {
-                setError(response.data.message || 'Failed to fetch report.');
-                setReport(null);
-            }
-            setLoading(false);
-        } catch (error) {
-            console.error("Frontend: Error fetching attendance report:", error.response?.data?.error || error.message);
-            setError(error.response?.status === 401 ? 'Unauthorized: Please log in again.' : 'Failed to fetch report. Please try again.');
-            setLoading(false);
+  const fetchReport = async (isAllRecords = false) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const query = new URLSearchParams();
+      if (!isAllRecords) {
+        query.append('limit', limit);
+        query.append('skip', skip);
+      }
+      if (dateFilter && !isAllRecords) {
+        query.append('date', dateFilter);
+      }
+      const response = await axios.get(
+        `http://localhost:5000/api/attendance/report?${query.toString()}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
         }
-    };
-
-    const handleLoadmore = () => {
-        setSkip((prevSkip) => prevSkip + limit);
-    };
-
-    // NEW: Handle "View All Dates" button click
-    const handleViewAllDates = () => {
-        setDateFilter(''); // Clear the date filter
-        setSkip(0); // Reset pagination to the beginning
-    };
-
-    // Handle CSV Download
-    const handleDownloadCsv = async () => {
-        if (!dateFilter) {
-            alert('Please select a date to download the report.');
-            return;
+      );
+      if (response.data.success) {
+        const newData = response.data.groupData;
+        if (isAllRecords) {
+          return newData; // Return data for CSV download
         }
-
-        try {
-            setDownloading(true);
-            setError(null);
-            const response = await axios.get(
-                `http://localhost:5000/api/attendance/download-csv?date=${dateFilter}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`,
-                    },
-                    responseType: 'blob',
-                }
-            );
-
-            const contentType = response.headers['content-type'];
-            if (contentType && contentType.includes('application/json')) {
-                const reader = new FileReader();
-                reader.onload = function() {
-                    const errorData = JSON.parse(reader.result);
-                    console.error("Backend Error on CSV Download:", errorData);
-                    setError(errorData.error || errorData.message || 'Failed to download CSV: No data found for the selected date.');
-                };
-                reader.readAsText(response.data);
-                setDownloading(false);
-                return;
-            }
-
-            const blob = new Blob([response.data], { type: 'text/csv' });
-            const link = document.createElement('a');
-            link.href = window.URL.createObjectURL(blob);
-            link.download = `attendance_report_${dateFilter}.csv`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(link.href);
-
-            setDownloading(false);
-        } catch (downloadError) {
-            console.error('Frontend: CSV download error:', downloadError);
-            setError('Failed to download CSV report. Please try again. Network or Server error.');
-            setDownloading(false);
+        if (skip === 0) {
+          setReport(newData);
+        } else {
+          setReport((prevData) => ({
+            ...prevData,
+            ...newData,
+          }));
         }
-    };
+        // Check if there's more data to load (assuming backend returns total)
+        const totalRecords = response.data.total || Object.values(newData).flat().length;
+        const loadedRecords = skip + limit;
+        setHasMore(loadedRecords < totalRecords);
+      }
+      setLoading(false);
+    } catch (error) {
+      setError(error.response?.status === 401 ? 'Unauthorized: Please log in again.' : 'Failed to fetch report. Please try again.');
+      setLoading(false);
+    }
+  };
 
-    // Effect to fetch report when skip or dateFilter changes
-    useEffect(() => {
-        fetchReport();
-    }, [skip, dateFilter]);
+  useEffect(() => {
+    fetchReport();
+  }, [skip, dateFilter]);
 
+  const handleLoadMore = () => {
+    setSkip((prevSkip) => prevSkip + limit);
+  };
 
-    return (
-        <div className="min-h-screen p-10 bg-white">
-            <h2 className="text-center text-2xl font-bold">Attendance Report</h2>
-            <div className="mt-6 mb-6 flex items-center space-x-4">
-                <h2 className="text-xl font-semibold">Filter by Date:</h2>
-                <input
-                    type="date"
-                    className="border bg-gray-100 p-2 rounded"
-                    value={dateFilter}
-                    onChange={(e) => {
-                        setDateFilter(e.target.value);
-                        setSkip(0); // Reset skip when date filter changes
-                    }}
-                />
-                <button
-                    onClick={handleDownloadCsv}
-                    className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
-                    disabled={downloading || !dateFilter}
-                >
-                    {downloading ? 'Downloading...' : 'Download CSV'}
-                </button>
-                {/* NEW: Button to view all dates */}
-                <button
-                    onClick={handleViewAllDates}
-                    className="px-6 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 disabled:opacity-50"
-                    disabled={loading} // Disable if already loading
-                >
-                    View All Dates
-                </button>
-            </div>
-            {error && <div className="text-red-500 mt-4">{error}</div>}
-            {loading ? (
-                <div className="text-gray-700">Loading...</div>
-            ) : report && Object.keys(report).length > 0 ? (
-                // Sort dates in descending order for display
-                Object.entries(report)
-                      .sort(([dateA], [dateB]) => new Date(dateB) - new Date(dateA))
-                      .map(([date, record]) => (
-                    <div className="mt-4 border-b pb-4" key={date}>
-                        <h2 className="text-xl font-semibold mb-2">{date}</h2>
-                        {record.length > 0 ? (
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full bg-white border border-gray-300" cellPadding="10">
-                                    <thead>
-                                        <tr>
-                                            <th className="border p-2 bg-gray-200 text-left text-sm font-semibold">S No</th>
-                                            <th className="border p-2 bg-gray-200 text-left text-sm font-semibold">Employee ID</th>
-                                            <th className="border p-2 bg-gray-200 text-left text-sm font-semibold">Employee Name</th>
-                                            <th className="border p-2 bg-gray-200 text-left text-sm font-semibold">Department</th>
-                                            <th className="border p-2 bg-gray-200 text-left text-sm font-semibold">Status</th>
-                                            <th className="border p-2 bg-gray-200 text-left text-sm font-semibold">Check-in</th>
-                                            <th className="border p-2 bg-gray-200 text-left text-sm font-semibold">Check-out</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {record.map((data, index) => (
-                                            <tr key={data.employeeId || index} className="hover:bg-gray-50">
-                                                <td className="border p-2 text-sm">{index + 1}</td>
-                                                <td className="border p-2 text-sm">{data.employeeId}</td>
-                                                <td className="border p-2 text-sm">{data.employeeName}</td>
-                                                <td className="border p-2 text-sm">{data.departmentName}</td>
-                                                <td className="border p-2 text-sm">{data.status}</td>
-                                                <td className="border p-2 text-sm">{data.checkIn ? new Date(data.checkIn).toLocaleTimeString() : 'N/A'}</td>
-                                                <td className="border p-2 text-sm">{data.checkOut ? new Date(data.checkOut).toLocaleTimeString() : 'N/A'}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        ) : (
-                            <div className="text-gray-600">No attendance records for this date.</div>
-                        )}
-                    </div>
-                ))
-            ) : (
-                <div className="text-gray-600">No data available</div>
-            )}
+  // Download CSV for the selected date
+  const handleDownloadDayCSV = () => {
+    if (!dateFilter || !report || !report[dateFilter]) {
+      alert('Please select a date with available records to download.');
+      return;
+    }
+    const dayRecords = report[dateFilter];
+    const csv = convertToCSV(dayRecords);
+    downloadCSV(csv, `attendance_${dateFilter}.csv`);
+  };
+
+  // Download CSV for all days
+  const handleDownloadAllCSV = async () => {
+    try {
+      const allData = await fetchReport(true); // Fetch all records
+      if (!allData || Object.keys(allData).length === 0) {
+        alert('No attendance records available to download.');
+        return;
+      }
+      const allRecords = Object.entries(allData).flatMap(([date, records]) =>
+        records.map(record => ({
+          ...record,
+          date,
+        }))
+      );
+      const csv = convertToCSV(allRecords);
+      downloadCSV(csv, 'attendance_all_days.csv');
+    } catch (error) {
+      alert('Failed to download all records. Please try again.');
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-primary-white p-6 sm:p-10">
+      <div className="max-w-6xl mx-auto">
+        <h2 className="text-center text-2xl sm:text-3xl font-bold text-primary-black mb-6">
+          Attendance Report
+        </h2>
+
+        {/* Filter and Download Buttons */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
+          <div className="flex items-center gap-3">
+            <label htmlFor="date-filter" className="text-lg font-semibold text-primary-black">
+              Filter by Date:
+            </label>
+            <input
+              id="date-filter"
+              type="date"
+              className="border-2 border-primary-black rounded-lg px-3 py-2 bg-white text-primary-black focus:outline-none focus:ring-2 focus:ring-primary-red"
+              value={dateFilter}
+              onChange={(e) => {
+                setDateFilter(e.target.value);
+                setSkip(0);
+              }}
+            />
+          </div>
+          <div className="flex gap-3">
             <button
-                className="mt-6 px-6 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 disabled:opacity-50"
-                onClick={handleLoadmore}
-                disabled={loading || !hasMore}
+              onClick={handleDownloadDayCSV}
+              className="px-4 py-2 text-white rounded-lg bg-red-600 hover:bg-red-700 transition duration-200 disabled:opacity-50"
+              disabled={!dateFilter || !report || !report[dateFilter]}
             >
-                {loading ? 'Loading...' : hasMore ? 'Load More' : 'No More Data'}
+              Download Day's CSV
             </button>
+            <button
+              onClick={handleDownloadAllCSV}
+              className="px-4 py-2 text-white rounded-lg bg-gray-600 hover:bg-gray-700 transition duration-200"
+            >
+              Download All Days' CSV
+            </button>
+          </div>
         </div>
-    );
+
+        {/* Error and Loading States */}
+        {error && (
+          <div className="text-primary-red text-center mb-6">{error}</div>
+        )}
+        {loading && !report && (
+          <div className="text-center text-primary-black">Loading...</div>
+        )}
+
+        {/* Report Data */}
+        {report && Object.keys(report).length > 0 ? (
+          Object.entries(report).map(([date, records]) => (
+            <div
+              key={date}
+              className="mb-8 bg-white rounded-lg shadow-lg p-6 border border-primary-black"
+            >
+              <h3 className="text-2xl font-semibold text-primary-black mb-4">
+                {date}
+              </h3>
+              {records.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="bg-primary-black text-primary-white">
+                        <th className="border border-primary-black p-3 text-left">S No</th>
+                        <th className="border border-primary-black p-3 text-left">Employee ID</th>
+                        <th className="border border-primary-black p-3 text-left">Employee Name</th>
+                        <th className="border border-primary-black p-3 text-left">Department</th>
+                        <th className="border border-primary-black p-3 text-left">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {records.map((data, index) => (
+                        <tr
+                          key={data.employeeId}
+                          className="hover:bg-gray-100 transition duration-150"
+                        >
+                          <td className="border border-primary-black p-3">{index + 1}</td>
+                          <td className="border border-primary-black p-3">{data.employeeId}</td>
+                          <td className="border border-primary-black p-3">{data.employeeName}</td>
+                          <td className="border border-primary-black p-3">{data.departmentName}</td>
+                          <td className="border border-primary-black p-3">{data.status}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="text-primary-black">No attendance records for this date.</div>
+              )}
+            </div>
+          ))
+        ) : (
+          !loading && (
+            <div className="text-center text-primary-black">No data available</div>
+          )
+        )}
+
+        {/* Load More Button */}
+        {hasMore && (
+          <div className="text-center mt-6">
+            <button
+              onClick={handleLoadMore}
+              disabled={loading || !hasMore}
+              className="px-6 py-2 bg-primary-red text-primary-white rounded-lg hover:bg-red-700 transition duration-200 disabled:opacity-50"
+            >
+              {loading ? 'Loading...' : 'Load More'}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default AttendanceReport;
