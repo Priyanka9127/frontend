@@ -27,7 +27,7 @@ const Setting = () => {
       try {
         console.log(localStorage.getItem("token"));
         const response = await axios.put(
-          "http://localhost:5000/api/setting/change-password",
+          "http://backems-production.up.railway.app/api/setting/change-password",
           setting,
           {
             headers: {
