@@ -22,7 +22,7 @@ export const columns = [
             className="w-10 h-10 rounded-full object-cover border border-gray-200"
             src={`https://backems-production.up.railway.app/${row.profileImage}`}
             alt={`${row.name}'s profile`}
-            onError={(e) => (e.target.src = 'httpss://via.placeholder.com/40?text=No+Image')} // Fallback image
+            onError={(e) => (e.target.src = 'https://via.placeholder.com/40?text=No+Image')} // Fallback image
           />
         ) : (
           <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs">
