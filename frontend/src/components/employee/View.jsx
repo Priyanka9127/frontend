@@ -13,7 +13,7 @@ const View = () => {
             setLoading(true);
             setError(null);
             try {
-                const response = await axios.get(`http://localhost:5000/api/employee/${id}`, {
+                const response = await axios.get(`http://backems-production.up.railway.app/api/employee/${id}`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("token")}`
                     },
@@ -89,7 +89,7 @@ const View = () => {
                 {/* Profile Image Section */}
                 <div className='md:col-span-1 flex justify-center'>
                     <img 
-                        src={`http://localhost:5000/${employee.userId.profileImage}`} 
+                        src={`http://backems-production.up.railway.app/${employee.userId.profileImage}`} 
                         alt={employee.userId.name} 
                         className="rounded-full w-64 h-64 object-cover border-4 border-red-600 shadow-lg transform transition-transform duration-300 hover:scale-105"
                     />

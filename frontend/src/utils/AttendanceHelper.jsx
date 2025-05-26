@@ -37,7 +37,7 @@ export const AttendanceHelper = ({ status, employeeId, statusChange }) => {
   const markEmployee = async (status, employeeId) => {
     try {
       const response = await axios.put(
-        `http://localhost:5000/api/attendance/update/${employeeId}`,
+        `http://backems-production.up.railway.app/api/attendance/update/${employeeId}`,
         { status },
         {
           headers: {

@@ -16,7 +16,7 @@ const View = () => {
       return;
     }
     try {
-      const response = await axios.get(`http://localhost:5000/api/salary/${id}/${user.role}`, {
+      const response = await axios.get(`http://backems-production.up.railway.app/api/salary/${id}/${user.role}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },

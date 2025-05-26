@@ -38,7 +38,7 @@ const Edit = () => {
             setLoading(true);
             setError(null); // Clear previous errors
             try {
-                const response = await axios.get(`http://localhost:5000/api/employee/${id}`, {
+                const response = await axios.get(`http://backems-production.up.railway.app/api/employee/${id}`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("token")}`
                     },
@@ -89,7 +89,7 @@ const Edit = () => {
 
         try {
             const response = await axios.put(
-                `http://localhost:5000/api/employee/${id}`, 
+                `http://backems-production.up.railway.app/api/employee/${id}`, 
                 employee, 
                 {
                     headers: {
