@@ -1,0 +1,25 @@
+/* src/index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* You can define custom component styles here or import them */
+/* For the .detail-item, we'll define it right here if you prefer a single file */
+.detail-item {
+  position: relative;
+  padding-left: 1.5rem; /* Space for the line */
+}
+
+.detail-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0.5rem; /* Width of the red line */
+  height: 80%; /* Height of the red line */
+  /* Use a Tailwind color variable here or hardcode if absolutely necessary,
+     but better to use the configured red-600 */
+  background-color: theme('colors.red.600'); /* Accesses your configured red-600 */
+  border-radius: 9999px; /* Fully rounded line */
+}
