@@ -35,7 +35,7 @@ export const DepartmentButton = ({ Id, onDepartmentDelete }) => {
 
         if (result.isConfirmed) {
             try {
-                const response = await axios.delete(`http://backems-production.up.railway.app/api/department/${id}`, {
+                const response = await axios.delete(`https://backems-production.up.railway.app/api/department/${id}`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("token")}`
                     },

@@ -13,7 +13,7 @@ const Detail = () => {
         const fetchLeave = async () => {
 
           try {
-            const response = await axios.get(`http://backems-production.up.railway.app/api/leave/detail/${id}`, {
+            const response = await axios.get(`https://backems-production.up.railway.app/api/leave/detail/${id}`, {
               headers: {
                 Authorization: `Bearer ${localStorage.getItem("token")}`
               },
@@ -37,7 +37,7 @@ const Detail = () => {
 
       const changeStatus = async (id, status) => {
         try {
-            const response = await axios.put(`http://backems-production.up.railway.app/api/leave/${id}`, {status}, {
+            const response = await axios.put(`https://backems-production.up.railway.app/api/leave/${id}`, {status}, {
               headers: {
                 Authorization: `Bearer ${localStorage.getItem("token")}`
               },
@@ -62,7 +62,7 @@ const Detail = () => {
     <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
         <div className='md:col-span-1 flex justify-center'>
             <img
-                src={`http://backems-production.up.railway.app/${leave.employeeId.userId.profileImage}`}
+                src={`https://backems-production.up.railway.app/${leave.employeeId.userId.profileImage}`}
                 alt="profile"
                 className="rounded-full w-64 h-64 object-cover border-4 border-red-600 shadow-lg transform transition-transform duration-300 hover:scale-105"
             />

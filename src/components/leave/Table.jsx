@@ -11,7 +11,7 @@ const Table = () => {
 
     const fetchLeaves = async () => {
         try {
-        const response = await axios.get('http://backems-production.up.railway.app/api/leave', {
+        const response = await axios.get('https://backems-production.up.railway.app/api/leave', {
           headers: {
             "Authorization": `Bearer ${localStorage.getItem("token")}`
           }

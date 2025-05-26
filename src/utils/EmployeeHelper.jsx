@@ -20,9 +20,9 @@ export const columns = [
         {row.profileImage ? (
           <img
             className="w-10 h-10 rounded-full object-cover border border-gray-200"
-            src={`http://backems-production.up.railway.app/${row.profileImage}`}
+            src={`https://backems-production.up.railway.app/${row.profileImage}`}
             alt={`${row.name}'s profile`}
-            onError={(e) => (e.target.src = 'https://via.placeholder.com/40?text=No+Image')} // Fallback image
+            onError={(e) => (e.target.src = 'httpss://via.placeholder.com/40?text=No+Image')} // Fallback image
           />
         ) : (
           <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs">
@@ -56,7 +56,7 @@ export const columns = [
 export const fetchDepartments = async () => {
   let departments = [];
   try {
-    const response = await axios.get('http://backems-production.up.railway.app/api/department', {
+    const response = await axios.get('https://backems-production.up.railway.app/api/department', {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
@@ -75,7 +75,7 @@ export const fetchDepartments = async () => {
 export const getEmployees = async (id) => {
   let employees = [];
   try {
-    const response = await axios.get(`http://backems-production.up.railway.app/api/employee/department/${id}`, {
+    const response = await axios.get(`https://backems-production.up.railway.app/api/employee/department/${id}`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
       },

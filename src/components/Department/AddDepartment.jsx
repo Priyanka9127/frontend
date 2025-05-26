@@ -22,7 +22,7 @@ const AddDepartment = () => {
     const handleSubmit = async (e) => {
         e.preventDefault()
         try {
-            const response = await axios.post("http://backems-production.up.railway.app/api/department/add", department, {
+            const response = await axios.post("https://backems-production.up.railway.app/api/department/add", department, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("token")}`
                 }

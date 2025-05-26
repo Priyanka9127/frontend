@@ -53,7 +53,7 @@ const AttendanceReport = () => {
         query.append('date', dateFilter);
       }
       const response = await axios.get(
-        `http://backems-production.up.railway.app/api/attendance/report?${query.toString()}`,
+        `https://backems-production.up.railway.app/api/attendance/report?${query.toString()}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
